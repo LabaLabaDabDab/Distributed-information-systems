@@ -1,0 +1,10 @@
+services:
+  manager:
+    build: ./manager
+    container_name: manager
+    ports:
+      - "8080:8080"
+
+  worker:
+    container_name: worker
+    build: ./worker

@@ -52,7 +52,6 @@ public class ManagerService {
             throw new IllegalArgumentException(String.format("%d is not a valid maximum length for the target word", hashDTO.getMaxLength()));
         }
 
-        //String requestId = UUID.nameUUIDFromBytes(hashDTO.getHash().getBytes(StandardCharsets.UTF_8)).toString();
         String requestId = UUID.randomUUID().toString();
         if (taskStatuses.containsKey(requestId) && taskStatuses.get(requestId).getStatus() != TaskStatus.ERROR) {
             logger.info("Task with UUID {} is already executing and its status is not ERROR", requestId);

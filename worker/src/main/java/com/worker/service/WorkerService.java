@@ -55,9 +55,14 @@ public class WorkerService {
         response.setRequestId(requestDTO.getRequestId());
         response.setAnswers(answers);
 
-        RestTemplate restTemplate = new RestTemplate();
+        WebClient client = WebClient.create(MANAGER_CRACK_ENDPOINT);
         try {
-            restTemplate.postForObject(MANAGER_CRACK_ENDPOINT, response, String.class);
+            client.post()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(response)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
             logger.info("Response sent successfully to manager");
         } catch (Exception e) {
             logger.error("Error sending response to manager", e);

@@ -2,20 +2,38 @@ package com.worker.service;
 
 import com.worker.dto.RequestDTO;
 import com.worker.dto.ResponseDTO;
+import com.worker.dto.StatusWorkDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.paukov.combinatorics3.Generator;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class WorkerService {
     private static final Logger logger = LogManager.getLogger(WorkerService.class);
-    public ResponseDTO crackHash(RequestDTO requestDTO) {
+
+    private static final String MANAGER_CRACK_ENDPOINT = "http://manager:8080/api/hash/response";
+
+    public StatusWorkDTO startCracking(RequestDTO requestDTO){
         logger.info("Processing crackHash request for requestId: {}", requestDTO.getRequestId());
+
+        StatusWorkDTO statusWorkDTO = new StatusWorkDTO();
+        statusWorkDTO.setStatusWork("working");
+        Thread thread = new Thread(() -> crackHash(requestDTO));
+        thread.start();
+
+        return statusWorkDTO;
+    }
+
+    public void crackHash(RequestDTO requestDTO) {
         List<String> answers = new ArrayList<>();
 
         for (int i = 1; i <= requestDTO.getMaxLength(); i++) {
@@ -37,6 +55,12 @@ public class WorkerService {
         response.setRequestId(requestDTO.getRequestId());
         response.setAnswers(answers);
 
-        return response;
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            restTemplate.postForObject(MANAGER_CRACK_ENDPOINT, response, String.class);
+            logger.info("Response sent successfully to manager");
+        } catch (Exception e) {
+            logger.error("Error sending response to manager", e);
+        }
     }
 }

@@ -1,10 +1,7 @@
 package com.manager.service;
 
 
-import com.manager.dto.CrackRequestDTO;
-import com.manager.dto.CrackResponseDTO;
-import com.manager.dto.HashDTO;
-import com.manager.dto.StatusResponseDTO;
+import com.manager.dto.*;
 import com.manager.enums.TaskStatus;
 import com.manager.exception.NoSuchTask;
 import com.manager.exception.NotMD5Hash;
@@ -14,12 +11,13 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +27,9 @@ public class ManagerService {
     private static final int TIMEOUT = 40;
     private static final String WORKER_CRACK_ENDPOINT = "http://worker:8081/internal/api/worker/hash/crack/task";
     private final ConcurrentHashMap<String, StatusResponseDTO> taskStatuses = new ConcurrentHashMap<>();
+
+    private final Lock lock = new ReentrantLock();
+
     private final List<String> alphabet = Arrays.asList(
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
@@ -69,34 +70,53 @@ public class ManagerService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(crackRequestDTO)
                 .retrieve()
-                .bodyToMono(CrackResponseDTO.class)
+                .bodyToMono(StatusWorkDTO.class)
                 .timeout(Duration.ofSeconds(TIMEOUT))
                 .subscribe(
                         response -> {
-                            logger.info("Got response from worker with task {}", requestId);
-                            logger.info("{} results:", requestId);
-                            logger.info(response.getAnswers());
-
-                            StatusResponseDTO statusResponseDTO = new StatusResponseDTO();
-                            statusResponseDTO.setStatus(TaskStatus.READY);
-                            statusResponseDTO.setData(response.getAnswers());
-                            taskStatuses.put(requestId, statusResponseDTO);
-                        },
+                           if ("working".equals(response.getStatusWork())) {
+                               logger.info("Work has started with task {}", requestId);
+                               try {
+                                   lock.lock();
+                                   StatusResponseDTO initialStatus = new StatusResponseDTO();
+                                   initialStatus.setStatus(TaskStatus.IN_PROGRESS);
+                                   taskStatuses.put(requestId, initialStatus);
+                               } finally {
+                                   lock.unlock();
+                               }
+                           }
+                       },
                         error -> {
                             logger.error("Error receiving response from worker {}", requestId);
                             logger.error(error);
 
                             StatusResponseDTO statusResponseDTO = new StatusResponseDTO();
                             statusResponseDTO.setStatus(TaskStatus.ERROR);
-                            taskStatuses.put(requestId, statusResponseDTO);
+                            try {
+                                lock.lock();
+                                taskStatuses.put(requestId, statusResponseDTO);
+                            } finally {
+                                lock.unlock();
+                            }
                         }
                 );
-
-        StatusResponseDTO initialStatus = new StatusResponseDTO();
-        initialStatus.setStatus(TaskStatus.IN_PROGRESS);
-        taskStatuses.put(requestId, initialStatus);
-
         return requestId;
+    }
+
+    public void processWorkerResponse(CrackResponseDTO crackResponseDTO){
+        logger.info("Got response from worker with task {}", crackResponseDTO.getRequestId());
+        logger.info("{} results:", crackResponseDTO.getRequestId());
+        logger.info(crackResponseDTO.getAnswers());
+
+        StatusResponseDTO statusResponseDTO = new StatusResponseDTO();
+        statusResponseDTO.setStatus(TaskStatus.READY);
+        statusResponseDTO.setData(crackResponseDTO.getAnswers());
+        try {
+            lock.lock();
+            taskStatuses.put(crackResponseDTO.getRequestId(), statusResponseDTO);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public StatusResponseDTO checkStatus(String requestId) throws NoSuchTask {

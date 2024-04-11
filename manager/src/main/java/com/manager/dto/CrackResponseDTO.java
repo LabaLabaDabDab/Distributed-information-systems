@@ -10,6 +10,9 @@ public class CrackResponseDTO {
     @JsonProperty("requestId")
     private String requestId;
 
+    @JsonProperty("partNumber")
+    private Integer partNumber;
+
     @JsonProperty("answers")
     private List<String> answers;
 

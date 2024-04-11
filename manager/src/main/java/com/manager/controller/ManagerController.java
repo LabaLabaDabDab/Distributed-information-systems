@@ -1,6 +1,5 @@
 package com.manager.controller;
 
-import com.manager.dto.CrackResponseDTO;
 import com.manager.dto.HashDTO;
 import com.manager.dto.StatusRequestDTO;
 import com.manager.dto.StatusResponseDTO;
@@ -9,6 +8,7 @@ import com.manager.exception.NotMD5Hash;
 import com.manager.service.ManagerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +29,7 @@ public class ManagerController {
         try {
             logger.info("Received request for following hash crack: {}", hashDTO.getHash());
             return ResponseEntity.ok(managerService.crackHash(hashDTO));
+
         }
         catch (NotMD5Hash | IllegalArgumentException e) {
             logger.warn("Given hash is not in MD-5 format or maxLength is not valid");
@@ -40,19 +41,7 @@ public class ManagerController {
         }
     }
 
-    @PostMapping("/response")
-    public ResponseEntity<String> receiveResponse(@RequestBody CrackResponseDTO crackResponseDTO) {
-        try {
-            logger.info("Received response for requestId: {}", crackResponseDTO.getRequestId());
-            managerService.processWorkerResponse(crackResponseDTO);
-            return ResponseEntity.ok("Response received successfully");
-        } catch (Exception e) {
-            logger.error("Error processing response", e);
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/status")
+   /* @GetMapping("/status")
     public ResponseEntity<StatusResponseDTO> getTaskStatus(@RequestBody StatusRequestDTO statusRequestDTO) {
         try {
             logger.info("Checking status for requestId: {}", statusRequestDTO.getRequestId());
@@ -67,5 +56,5 @@ public class ManagerController {
             logger.error("Error checking status for requestId: {}", statusRequestDTO.getRequestId(), e);
             return ResponseEntity.badRequest().build();
         }
-    }
+    }*/
 }

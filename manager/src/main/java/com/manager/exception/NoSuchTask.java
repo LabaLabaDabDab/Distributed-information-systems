@@ -7,11 +7,11 @@ public class NoSuchTask extends Exception {
         super(errorMessage);
     }
 
-    public NoSuchTask (Throwable cause) {
+    public NoSuchTask(Throwable cause) {
         super (cause);
     }
 
-    public NoSuchTask (String message, Throwable cause) {
+    public NoSuchTask(String message, Throwable cause) {
         super (message, cause);
     }
 }

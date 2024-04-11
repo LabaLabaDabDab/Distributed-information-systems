@@ -14,8 +14,14 @@ public class CrackRequestDTO {
     private String hash;
 
     @JsonProperty("maxLength")
-    private int maxLength;
+    private Integer maxLength;
 
     @JsonProperty("alphabet")
     private List<String> alphabet;
+
+    @JsonProperty("partAlphabet")
+    private List<String> partAlphabet;
+
+    @JsonProperty("partNumber")
+    private Integer partNumber;
 }

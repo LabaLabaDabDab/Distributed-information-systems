@@ -14,8 +14,14 @@ public class RequestDTO {
     private String hash;
 
     @JsonProperty("maxLength")
-    private int maxLength;
+    private Integer maxLength;
 
     @JsonProperty("alphabet")
     private List<String> alphabet;
+
+    @JsonProperty("partNumber")
+    private Integer partNumber;
+
+    @JsonProperty("partAlphabet")
+    private List<String> partAlphabet;
 }

@@ -7,11 +7,11 @@ public class NotMD5Hash extends Exception {
         super(errorMessage);
     }
 
-    public NotMD5Hash (Throwable cause) {
+    public NotMD5Hash(Throwable cause) {
         super (cause);
     }
 
-    public NotMD5Hash (String message, Throwable cause) {
+    public NotMD5Hash(String message, Throwable cause) {
         super (message, cause);
     }
 }

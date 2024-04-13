@@ -41,7 +41,7 @@ public class ManagerController {
         }
     }
 
-   /* @GetMapping("/status")
+    @GetMapping("/status")
     public ResponseEntity<StatusResponseDTO> getTaskStatus(@RequestBody StatusRequestDTO statusRequestDTO) {
         try {
             logger.info("Checking status for requestId: {}", statusRequestDTO.getRequestId());
@@ -56,5 +56,5 @@ public class ManagerController {
             logger.error("Error checking status for requestId: {}", statusRequestDTO.getRequestId(), e);
             return ResponseEntity.badRequest().build();
         }
-    }*/
+    }
 }

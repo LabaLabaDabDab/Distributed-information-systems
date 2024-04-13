@@ -110,6 +110,4 @@ public class RabbitMQConfig implements RabbitListenerConfigurer {
     public Binding workerBinding(DirectExchange exchange, Queue workerResponseQueue) {
         return BindingBuilder.bind(workerResponseQueue).to(exchange).with(workerResponseRoutingKey);
     }
-
-
 }

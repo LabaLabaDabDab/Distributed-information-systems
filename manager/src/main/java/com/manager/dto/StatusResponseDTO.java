@@ -13,4 +13,9 @@ public class StatusResponseDTO {
 
     @JsonProperty("data")
     private List<String> data;
+
+    public StatusResponseDTO(TaskStatus status, List<String> data) {
+        this.status = status;
+        this.data = data;
+    }
 }

@@ -30,7 +30,6 @@ public class ManagerProducer {
         }
         catch (AmqpException e) {
             logger.error("Unable to send message to RabbitMQ: id {}, part number {}", crackRequestDTO.getRequestId(), crackRequestDTO.getPartNumber());
-            logger.warn("Request with id {} will be saved in db while RabbitMQ is down", crackRequestDTO.getRequestId());
             throw new RabbitException();
         }
     }

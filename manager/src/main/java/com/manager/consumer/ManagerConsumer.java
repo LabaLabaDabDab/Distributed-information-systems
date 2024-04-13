@@ -19,7 +19,7 @@ public class ManagerConsumer {
         this.managerService = managerService;
     }
 
-    @RabbitListener(queues = "${rabbitmq.worker.response.queue.name}", containerFactory = "rabbitListenerContainerFactory")
+    @RabbitListener(queues = "${rabbitmq.worker.response.queue.name}")
     public void consume(CrackResponseDTO crackResponseDTO) {
         logger.info("Received answer from worker: {}", crackResponseDTO);
         managerService.processWorkerResponse(crackResponseDTO);

@@ -22,7 +22,6 @@ public class WorkerProducer {
     @Value("${rabbitmq.worker.response.routing.key}")
     private String routingKey;
 
-
     public void sendMessage(ResponseDTO responseDTO) {
         logger.info("Starts sending the response");
         rabbitTemplate.convertAndSend(exchangeName, routingKey, responseDTO);
